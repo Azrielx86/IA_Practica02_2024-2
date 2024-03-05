@@ -14,6 +14,7 @@ class GraphVisitStatus(Enum):
 
 class GraphNode:
     """Node class for a graph"""
+
     def __init__(self, value: T) -> None:
         """
         :param value: Data to store in the node
@@ -117,7 +118,7 @@ class Graph:
         if node2 not in self.__vertex:
             self.__vertex.add(node2)
 
-    def breadth_first_search(self, stop_condition: Optional[Callable]) -> list[GraphNode]:
+    def breadth_first_search(self, stop_condition: Optional[Callable[[T], bool]]) -> list[GraphNode]:
         """
         How the algorithm works:
             1. Start at the root node and add it to a queue.
@@ -135,9 +136,7 @@ class Graph:
             node.status = GraphVisitStatus.VISITED
             result.append(node)
 
-            pending = [n for n in node.neighbors if n is not n.status == GraphVisitStatus.NO_VISITED]
-
-            for n in pending:
+            for n in [n for n in node.neighbors if n is not n.status == GraphVisitStatus.NO_VISITED]:
                 queue.append(n)
 
             if stop_condition and stop_condition(node.value):
@@ -183,35 +182,21 @@ class Graph:
                 self.__dfs_visit(vertex, visit_order)
         return visit_order
 
-    def depth_first_search_iterative(self, stop_condition: Optional[Callable]):
-        """
-        Preorder traverse, iterative solution.
-            1. Visit the root
-            2. Traverse the left subtree, i.e., call Preorder(left-subtree)
-            3. Traverse the right subtree, i.e., call Preorder(right-subtree)
-        :param stop_condition: Condition to search a node and stop the algorithm
-        :return: A list with the traveled nodes
-        """
-        stack: list = []
-        result: list = []
-        node = self.__root
+    def dfs_limited(self, node: GraphNode, target: Callable[[T], bool], depth: int) -> Optional[GraphNode]:
+        if depth >= 0:
+            if target(node.value):
+                return node
 
-        while stack or node:
-            if node:
-                result.append(node)
+            for n in node.neighbors:
+                self.dfs_limited(n, target, depth - 1)
 
-                if right := node.rightChild:
-                    stack.append(right)
-
-                node = node.leftChild
-            else:
-                node = stack.pop()
-
-            if stop_condition and stop_condition(node.value):
-                result.append(node)
-                break
-
-        return result
+    def depth_first_search_iterative(self, root: GraphNode, target: Callable) -> Optional[GraphNode]:
+        depth = 0
+        while True:
+            result = self.dfs_limited(root, target, depth)
+            if target(result.value):
+                return result
+            depth += 1
 
 
 def generateTree(graph: Graph, nodeData: T, level: int, maxLevel: int, weight: int = 0) -> GraphNode:
@@ -246,3 +231,5 @@ if __name__ == '__main__':
     tree.root = generateTree(tree, 25, 0, 5)
     print(f"BFS travel: {tree.breadth_first_search(lambda x: x == 30)}")
     print(f"DFS: {tree.depth_first_search()}")
+    r = tree.dfs_limited(tree.root, lambda n: n == 30, 15)
+    print(r)

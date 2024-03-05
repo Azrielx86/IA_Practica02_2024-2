@@ -183,20 +183,6 @@ class Graph:
                 self.__dfs_visit(vertex, visit_order)
         return visit_order
 
-    def print_dfs_route(self, first):
-        if first not in self.__vertex:
-            return
-
-        self.depth_first_search()
-
-        travel = []
-        node = self.__root
-        while node is not None:
-            travel.append(node.value)
-            node = node.parent
-
-        return travel
-
     def depth_first_search_iterative(self, stop_condition: Optional[Callable]):
         """
         Preorder traverse, iterative solution.
@@ -260,4 +246,3 @@ if __name__ == '__main__':
     tree.root = generateTree(tree, 25, 0, 5)
     print(f"BFS travel: {tree.breadth_first_search(lambda x: x == 30)}")
     print(f"DFS: {tree.depth_first_search()}")
-    # print(f"DFS travel: {tree.depthFirstSearch(lambda x: x == 30)}")

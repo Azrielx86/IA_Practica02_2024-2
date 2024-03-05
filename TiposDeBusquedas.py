@@ -1,32 +1,52 @@
 import math
 from typing import TypeVar, Optional, Callable
+from enum import Enum
 
 T = TypeVar("T")
 
 
+class GraphVisitStatus(Enum):
+    """Used to declare the visited status of a node."""
+    VISITED = 0
+    NO_VISITED = 1
+    FINISHED = 2
+
+
 class GraphNode:
+    """Node class for a graph"""
     def __init__(self, value: T) -> None:
         """
         :param value: Data to store in the node
         """
         self.__value: T = value
         self.__neighbours: dict[GraphNode, int] = {}
-        self.__visited: bool = False
+        self.__status: GraphVisitStatus = GraphVisitStatus.NO_VISITED
+        self.__parent: Optional[GraphNode] = None
+        self.__distance: int = -1
+        self.__final_distance: int = -1
 
     @property
-    def visited(self):
-        return
+    def parent(self):
+        return self.__parent
 
-    @visited.setter
-    def visited(self, value):
-        self.__visited = value
+    @parent.setter
+    def parent(self, value):
+        self.__parent = value
 
     @property
-    def neighbours(self):
+    def final_distance(self) -> int:
+        return self.__final_distance
+
+    @final_distance.setter
+    def final_distance(self, value: int) -> None:
+        self.__final_distance = value
+
+    @property
+    def neighbors(self) -> dict["GraphNode", int]:
         return self.__neighbours
 
-    @neighbours.setter
-    def neighbours(self, value):
+    @neighbors.setter
+    def neighbors(self, value):
         self.__neighbours = value
 
     @property
@@ -37,11 +57,28 @@ class GraphNode:
     def value(self, value: T) -> None:
         self.__value = value
 
+    @property
+    def distance(self) -> int:
+        return self.__distance
+
+    @distance.setter
+    def distance(self, value: int) -> None:
+        self.__distance = value
+
+    @property
+    def status(self) -> GraphVisitStatus:
+        return self.__status
+
+    @status.setter
+    def status(self, value: int) -> None:
+        self.__status = value
+
     def add_neighbour(self, node: "GraphNode", dist: int):
+        """Adds a node to the neighbors list"""
         if node not in self.__neighbours.keys():
             self.__neighbours[node] = dist
         else:
-            print(f"Node {node} already in {self} neighbours list")
+            print(f"Node {node} already in {self} neighbors list")
 
     def __str__(self) -> str:
         return str(self.__value)
@@ -51,13 +88,15 @@ class GraphNode:
 
 
 class Graph:
+    __global_time: int = -1
+
     def __init__(self) -> None:
         self.__root: GraphNode | None = None
         self.__vertex: set[GraphNode] = set()
 
     @property
-    def vertex(self):
-        return
+    def vertex(self) -> set[GraphNode]:
+        return self.__vertex
 
     @property
     def root(self) -> GraphNode:
@@ -68,6 +107,7 @@ class Graph:
         self.__root = value
 
     def add_edge(self, node1: GraphNode, node2: GraphNode, weight: int) -> None:
+        """Adds an edge to the graph, and adds both nodes to their respective neighbors list."""
         node1.add_neighbour(node2, weight)
         node2.add_neighbour(node1, weight)
 
@@ -92,10 +132,10 @@ class Graph:
 
         while len(queue) > 0:
             node = queue.pop(0)
-            node.visited = True
+            node.status = GraphVisitStatus.VISITED
             result.append(node)
 
-            pending = [n for n in node.neighbours if n is not n.visited]
+            pending = [n for n in node.neighbors if n is not n.status == GraphVisitStatus.NO_VISITED]
 
             for n in pending:
                 queue.append(n)
@@ -104,9 +144,58 @@ class Graph:
                 break
 
         for n in self.__vertex:
-            n.visited = False
+            n.status = GraphVisitStatus.NO_VISITED
 
         return result
+
+    @classmethod
+    def __dfs_visit(cls, vertex: GraphNode, visited_order: list[GraphNode]) -> int:
+        """Method to visit a node and its neighbors if some of those were not visited"""
+        vertex.status = GraphVisitStatus.VISITED
+        cls.__global_time = cls.__global_time + 1
+        vertex.distance = cls.__global_time
+        visited_order.append(vertex)
+
+        for v in vertex.neighbors:
+            if v.status == GraphVisitStatus.NO_VISITED:
+                v.parent = vertex
+                cls.__dfs_visit(v, visited_order)
+
+        vertex.status = GraphVisitStatus.FINISHED
+        cls.__global_time = cls.__global_time + 1
+        vertex.final_distance = cls.__global_time
+        return cls.__global_time
+
+    def depth_first_search(self) -> list[GraphNode]:
+        """Depth First Search: Recursive approach."""
+        visit_order = []
+        for vertex in self.__vertex:
+            vertex.status = GraphVisitStatus.NO_VISITED
+            vertex.parent = None
+
+        self.__global_time = 0
+
+        # Start from the root node
+        self.__dfs_visit(self.__root, visit_order)
+
+        for vertex in self.__vertex:
+            if vertex.status == GraphVisitStatus.NO_VISITED:
+                self.__dfs_visit(vertex, visit_order)
+        return visit_order
+
+    def print_dfs_route(self, first):
+        if first not in self.__vertex:
+            return
+
+        self.depth_first_search()
+
+        travel = []
+        node = self.__root
+        while node is not None:
+            travel.append(node.value)
+            node = node.parent
+
+        return travel
 
     def depth_first_search_iterative(self, stop_condition: Optional[Callable]):
         """
@@ -139,11 +228,12 @@ class Graph:
         return result
 
 
-def generateTree(nodeData: T, level: int, maxLevel: int, weight: int = 0) -> GraphNode:
+def generateTree(graph: Graph, nodeData: T, level: int, maxLevel: int, weight: int = 0) -> GraphNode:
     """
     Generates a tree with the condition:
         - Left node: :math:`x-1`
         - Right node: :math:`\\sqrt{x}`
+    :param graph: Main Graph to add the node
     :param weight: Weight of the node
     :param maxLevel: Max height of the tree
     :param nodeData: integer to the node
@@ -156,18 +246,18 @@ def generateTree(nodeData: T, level: int, maxLevel: int, weight: int = 0) -> Gra
     if level > maxLevel:
         return node
 
-    left_child = generateTree(left, level + 1, maxLevel)
-    right_child = generateTree(right, level + 1, maxLevel)
+    left_child = generateTree(graph, left, level + 1, maxLevel)
+    right_child = generateTree(graph, right, level + 1, maxLevel)
 
-    node.add_neighbour(left_child, weight)
-    node.add_neighbour(right_child, weight)
+    graph.add_edge(node, left_child, weight)
+    graph.add_edge(node, right_child, weight)
 
     return node
 
 
 if __name__ == '__main__':
     tree = Graph()
-    tree.root = generateTree(25, 0, 5)
+    tree.root = generateTree(tree, 25, 0, 5)
     print(f"BFS travel: {tree.breadth_first_search(lambda x: x == 30)}")
+    print(f"DFS: {tree.depth_first_search()}")
     # print(f"DFS travel: {tree.depthFirstSearch(lambda x: x == 30)}")
-    print("A")

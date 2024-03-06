@@ -130,21 +130,24 @@ class Graph:
             :return: A list with the traveled nodes
         """
         queue = [self.__root, ]
+        path = [[self.__root, ], ]
         result = []
 
         while len(queue) > 0:
             node = queue.pop(0)
+            node_path = path.pop(0)
             node.status = GraphVisitStatus.VISITED
             result.append(node)
 
             for n in [n for n in node.neighbors if n is not n.status == GraphVisitStatus.NO_VISITED]:
                 queue.append(n)
+                path.append([*node_path, n])
 
             if stop_condition and stop_condition(node.value):
+                result = node_path
                 break
 
-        for n in self.__vertex:
-            n.status = GraphVisitStatus.NO_VISITED
+        self.__reset_vertex_status()
 
         return result
 
@@ -254,12 +257,12 @@ def test_algorithm(function: Callable, message: str, *args, **kwargs) -> None:
     start = time.perf_counter()
     ret = function(*args, **kwargs)
     end = time.perf_counter()
-    print(f"{message} [Exec Time = {end - start}]: {ret}")
+    print(f"{message} [Exec Time = {end - start:0.5e}]: {ret}")
 
 
 if __name__ == '__main__':
     tree = Graph()
     tree.root = generateTree(tree, 25, 0, 5)
     test_algorithm(tree.breadth_first_search, "BFS", stop_condition=lambda x: x == 30)
-    test_algorithm(tree.depth_first_search, "DFS", lambda x: x == 7)
-    test_algorithm(tree.dfs_limited, "DFS Limited (depth = 5; target = 7) ", tree.root, lambda x: x == 7, 5)
+    test_algorithm(tree.depth_first_search, "DFS", lambda x: x == 30)
+    test_algorithm(tree.dfs_limited, "DFS Limited (depth = 5; target = 7) ", tree.root, lambda x: x == 30, 5)

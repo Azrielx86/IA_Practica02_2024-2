@@ -181,7 +181,11 @@ class Graph:
         return False
 
     def depth_first_search(self, target: Optional[Callable[[T], bool]] = None) -> list[GraphNode]:
-        """Depth First Search: Recursive approach."""
+        """
+        Depth First Search: Recursive approach.
+        :param target: Function to found a node and stop the algorithm.
+        :return: Path to the target node from the root node.
+        """
         visit_order = []
         for vertex in self.__vertex:
             vertex.status = GraphVisitStatus.NO_VISITED
@@ -204,6 +208,13 @@ class Graph:
         return visit_order
 
     def dfs_limited(self, node: GraphNode, target: Callable[[T], bool], depth: int) -> Optional[list[GraphNode]]:
+        """
+        Limited DFS Implementation
+        :param node: Start node of the algorithm
+        :param target: Function with the condition to found the target and stop the algorithm
+        :param depth: Max depth to search the node.
+        :return: Path from the start node to the target node
+        """
         if depth >= 0:
             if target(node.value):
                 return [node, ]
@@ -217,12 +228,33 @@ class Graph:
                     return result
         return None
 
-    def depth_first_search_iterative(self, root: GraphNode, target: Callable) -> Optional[GraphNode]:
+    def __dfs_lim_iter(self, node: GraphNode, target: Callable[[T], bool], depth: int) -> Optional[list[GraphNode]]:
+        """Helper function to the DFS iterative implementation"""
+        if depth >= 0:
+            if target(node.value):
+                return [node, ]
+
+            for n in node.neighbors:
+                result = self.__dfs_lim_iter(n, target, depth - 1)
+                if result:
+                    result.insert(0, node)
+                    return result
+        return None
+
+    def dfs_iterative(self, root: GraphNode, target: Callable, max_depth: int = 0) -> Optional[list[GraphNode]]:
+        """
+        Iterative Depth First Search Implementation
+        :param root: Root node of the graph or start point to search
+        :param target: Function with the condition to stop the algorithm
+        :param max_depth: Max depth to search and stop the algorithm
+        :return:
+        """
         depth = 0
-        while True:
-            result = self.dfs_limited(root, target, depth)
-            if target(result.value):
-                return result
+        while depth <= max_depth:
+            result = self.__dfs_lim_iter(root, target, depth)
+            if result:
+                if target and target(result[-1].value):
+                    return result
             depth += 1
 
 
@@ -253,11 +285,19 @@ def generateTree(graph: Graph, nodeData: T, level: int, maxLevel: int, weight: i
     return node
 
 
-def test_algorithm(function: Callable, message: str, *args, **kwargs) -> None:
+def test_algorithm(function: Callable, message: Optional[str] = None, *args, **kwargs) -> None:
+    """
+    Function to test the execution time of a function,
+    :param function: Function to test
+    :param message: An optional message that will appear at the start of the message result,
+                    if not defined it will be the function name
+    :param args: Optional arguments of the function
+    :param kwargs: Optional keyword arguments of the function
+    """
     start = time.perf_counter()
     ret = function(*args, **kwargs)
     end = time.perf_counter()
-    print(f"{message} [Exec Time = {end - start:0.5e}]: {ret}")
+    print(f"{message if message is not None else function} [Exec Time = {end - start:0.5e}]: {ret}")
 
 
 if __name__ == '__main__':
@@ -266,3 +306,4 @@ if __name__ == '__main__':
     test_algorithm(tree.breadth_first_search, "BFS", stop_condition=lambda x: x == 30)
     test_algorithm(tree.depth_first_search, "DFS", lambda x: x == 30)
     test_algorithm(tree.dfs_limited, "DFS Limited (depth = 5; target = 7) ", tree.root, lambda x: x == 30, 5)
+    test_algorithm(tree.dfs_iterative, "DFS Iterative", tree.root, lambda x: x == 30, 5)

@@ -180,15 +180,26 @@ class Graph:
         for vertex in self.__vertex:
             if vertex.status == GraphVisitStatus.NO_VISITED:
                 self.__dfs_visit(vertex, visit_order)
+
+        # Reset node status
+        for vertex in self.__vertex:
+            vertex.status = GraphVisitStatus.NO_VISITED
+
         return visit_order
 
-    def dfs_limited(self, node: GraphNode, target: Callable[[T], bool], depth: int) -> Optional[GraphNode]:
+    def dfs_limited(self, node: GraphNode, target: Callable[[T], bool], depth: int) -> Optional[list[GraphNode]]:
         if depth >= 0:
             if target(node.value):
-                return node
+                return [node, ]
 
-            for n in node.neighbors:
-                self.dfs_limited(n, target, depth - 1)
+            node.status = GraphVisitStatus.VISITED
+
+            for n in [n for n in node.neighbors if n.status == GraphVisitStatus.NO_VISITED]:
+                result = self.dfs_limited(n, target, depth - 1)
+                if result:
+                    result.insert(0, node)
+                    return result
+        return None
 
     def depth_first_search_iterative(self, root: GraphNode, target: Callable) -> Optional[GraphNode]:
         depth = 0
@@ -231,5 +242,4 @@ if __name__ == '__main__':
     tree.root = generateTree(tree, 25, 0, 5)
     print(f"BFS travel: {tree.breadth_first_search(lambda x: x == 30)}")
     print(f"DFS: {tree.depth_first_search()}")
-    r = tree.dfs_limited(tree.root, lambda n: n == 30, 15)
-    print(r)
+    print(f"DFS Limited (depth = 5; target = 30): {tree.dfs_limited(tree.root, lambda n: n == 30, 5)}")

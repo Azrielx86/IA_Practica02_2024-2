@@ -119,7 +119,7 @@ class Graph:
         if node2 not in self.__vertex:
             self.__vertex.add(node2)
 
-    def breadth_first_search(self, stop_condition: Optional[Callable[[T], bool]]) -> list[GraphNode]:
+    def breadth_first_search(self, stop_condition: Optional[Callable[[T], bool]] = None) -> list[GraphNode]:
         """
         How the algorithm works:
             1. Start at the root node and add it to a queue.
@@ -250,9 +250,9 @@ def generateTree(graph: Graph, nodeData: T, level: int, maxLevel: int, weight: i
     return node
 
 
-def test_algorithm(function: Callable, message: str, *args) -> None:
+def test_algorithm(function: Callable, message: str, *args, **kwargs) -> None:
     start = time.perf_counter()
-    ret = function(*args)
+    ret = function(*args, **kwargs)
     end = time.perf_counter()
     print(f"{message} [Exec Time = {end - start}]: {ret}")
 
@@ -260,6 +260,6 @@ def test_algorithm(function: Callable, message: str, *args) -> None:
 if __name__ == '__main__':
     tree = Graph()
     tree.root = generateTree(tree, 25, 0, 5)
-    test_algorithm(tree.breadth_first_search, "BFS", lambda x: x == 30)
+    test_algorithm(tree.breadth_first_search, "BFS", stop_condition=lambda x: x == 30)
     test_algorithm(tree.depth_first_search, "DFS", lambda x: x == 7)
     test_algorithm(tree.dfs_limited, "DFS Limited (depth = 5; target = 7) ", tree.root, lambda x: x == 7, 5)

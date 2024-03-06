@@ -1,4 +1,5 @@
 import math
+import time
 from typing import TypeVar, Optional, Callable
 from enum import Enum
 
@@ -147,25 +148,36 @@ class Graph:
 
         return result
 
+    def __reset_vertex_status(self):
+        for vertex in self.__vertex:
+            vertex.status = GraphVisitStatus.NO_VISITED
+
     @classmethod
-    def __dfs_visit(cls, vertex: GraphNode, visited_order: list[GraphNode]) -> int:
+    def __dfs_visit(cls, vertex: GraphNode, visited_order: list[GraphNode],
+                    target: Optional[Callable[[T], bool]] = None) -> bool:
         """Method to visit a node and its neighbors if some of those were not visited"""
         vertex.status = GraphVisitStatus.VISITED
-        cls.__global_time = cls.__global_time + 1
+        cls.__global_time += 1
         vertex.distance = cls.__global_time
         visited_order.append(vertex)
+
+        if target and target(vertex.value):
+            return True
 
         for v in vertex.neighbors:
             if v.status == GraphVisitStatus.NO_VISITED:
                 v.parent = vertex
-                cls.__dfs_visit(v, visited_order)
+                if cls.__dfs_visit(v, visited_order, target):
+                    cls.__global_time += 1
+                    v.final_distance = cls.__global_time
+                    return True
 
         vertex.status = GraphVisitStatus.FINISHED
-        cls.__global_time = cls.__global_time + 1
+        cls.__global_time += 1
         vertex.final_distance = cls.__global_time
-        return cls.__global_time
+        return False
 
-    def depth_first_search(self) -> list[GraphNode]:
+    def depth_first_search(self, target: Optional[Callable[[T], bool]] = None) -> list[GraphNode]:
         """Depth First Search: Recursive approach."""
         visit_order = []
         for vertex in self.__vertex:
@@ -175,16 +187,17 @@ class Graph:
         self.__global_time = 0
 
         # Start from the root node
-        self.__dfs_visit(self.__root, visit_order)
+        if self.__dfs_visit(self.__root, visit_order, target):
+            self.__reset_vertex_status()
+            return visit_order
 
         for vertex in self.__vertex:
             if vertex.status == GraphVisitStatus.NO_VISITED:
-                self.__dfs_visit(vertex, visit_order)
+                if self.__dfs_visit(vertex, visit_order, target):
+                    self.__reset_vertex_status()
+                    return visit_order
 
-        # Reset node status
-        for vertex in self.__vertex:
-            vertex.status = GraphVisitStatus.NO_VISITED
-
+        self.__reset_vertex_status()
         return visit_order
 
     def dfs_limited(self, node: GraphNode, target: Callable[[T], bool], depth: int) -> Optional[list[GraphNode]]:
@@ -225,7 +238,7 @@ def generateTree(graph: Graph, nodeData: T, level: int, maxLevel: int, weight: i
     node = GraphNode(nodeData)
     left, right = nodeData + 1, int(math.sqrt(nodeData))
 
-    if level > maxLevel:
+    if level >= maxLevel:
         return node
 
     left_child = generateTree(graph, left, level + 1, maxLevel)
@@ -237,9 +250,16 @@ def generateTree(graph: Graph, nodeData: T, level: int, maxLevel: int, weight: i
     return node
 
 
+def test_algorithm(function: Callable, message: str, *args) -> None:
+    start = time.perf_counter()
+    ret = function(*args)
+    end = time.perf_counter()
+    print(f"{message} [Exec Time = {end - start}]: {ret}")
+
+
 if __name__ == '__main__':
     tree = Graph()
     tree.root = generateTree(tree, 25, 0, 5)
-    print(f"BFS travel: {tree.breadth_first_search(lambda x: x == 30)}")
-    print(f"DFS: {tree.depth_first_search()}")
-    print(f"DFS Limited (depth = 5; target = 30): {tree.dfs_limited(tree.root, lambda n: n == 30, 5)}")
+    test_algorithm(tree.breadth_first_search, "BFS", lambda x: x == 30)
+    test_algorithm(tree.depth_first_search, "DFS", lambda x: x == 7)
+    test_algorithm(tree.dfs_limited, "DFS Limited (depth = 5; target = 7) ", tree.root, lambda x: x == 7, 5)

@@ -232,6 +232,7 @@ class Graph:
                 result = self.dfs_limited(n, target, depth - 1)
                 if result:
                     result.insert(0, node)
+                    self.__reset_vertex_status()
                     return result
         return None
 
@@ -261,6 +262,7 @@ class Graph:
             result = self.__dfs_lim_iter(root, target, depth)
             if result:
                 if target and target(result[-1].value):
+                    self.__reset_vertex_status()
                     return result
             depth += 1
 
@@ -323,48 +325,10 @@ def print_results(path: list[GraphNode]) -> None:
     print(f"Distancia: {path_distance}")
 
 
-if __name__ == '__main__':
-    term_width = 80
-    A = GraphNode("A")
-    B = GraphNode("B")
-    C = GraphNode("C")
-    D = GraphNode("D")
-    E = GraphNode("E")
-    F = GraphNode("F")
-    G = GraphNode("G")
-    H = GraphNode("H")
-    I = GraphNode("I")
-    J = GraphNode("J")
-    K = GraphNode("K")
-    edc = Graph(A, {A, B, C, D, E, F, G, H, I, J, K})
-
-    edc.add_edge(A, B, 5)
-    edc.add_edge(A, C, 8)
-    edc.add_edge(B, C, 8)
-    edc.add_edge(C, D, 2)
-    edc.add_edge(D, B, 3)
-    edc.add_edge(D, E, 4)
-    edc.add_edge(E, I, 7)
-    edc.add_edge(E, H, 11)
-    edc.add_edge(F, E, 10)
-    edc.add_edge(F, I, 6)
-    edc.add_edge(F, G, 5)
-    edc.add_edge(F, C, 7)
-    edc.add_edge(G, I, 6)
-    edc.add_edge(G, K, 5)
-    edc.add_edge(K, J, 9)
-    edc.add_edge(H, I, 6)
-    edc.add_edge(H, J, 8)
-    edc.add_edge(I, J, 15)
-
-    inicio = A.value
-    objetivo = J.value
-
-    print("[ Prueba de algoritmos ]".center(term_width, '='))
-
-    print("Grafo: ")
-    edc.print_graph()
-
+def get_path(nodo_inicio: GraphNode, nodo_fin: GraphNode) -> None:
+    inicio = nodo_inicio.value
+    objetivo = nodo_fin.value
+    print(f"[ Ruta ]".center(term_width, '='))
     print(f"Nodo de inicio: {inicio}")
     print(f"Nodo objetivo: {objetivo}")
 
@@ -387,3 +351,48 @@ if __name__ == '__main__':
     print("[ Búsqueda de Costo Uniforme ]".center(term_width, '='))
     result_path = edc.uniform_cost_search(edc.root, lambda n: n == objetivo)
     print_results(result_path)
+
+
+# Aplicar DFS y BFS para encontrar la ruta a seguir desde la entrada hacia los escenarios
+# “Kinetic Field” y “circuit grounds”.
+if __name__ == '__main__':
+    term_width = 80
+    A = GraphNode("A")  # Entrada Docker
+    B = GraphNode("B")  # Recarga Info
+    C = GraphNode("C")  # Dos X Stage
+    D = GraphNode("D")  # Servicios
+    E = GraphNode("E")  # Circuit G
+    F = GraphNode("F")  # Pixel Forest
+    G = GraphNode("G")  # Forest Jungle
+    H = GraphNode("H")  # Cantina???
+    I = GraphNode("I")  # Bebidas
+    J = GraphNode("J")  # Kinetic
+    K = GraphNode("K")  # Surtidora
+    edc = Graph(A, {A, B, C, D, E, F, G, H, I, J, K})
+
+    edc.add_edge(A, B, 5)
+    edc.add_edge(A, C, 8)
+    edc.add_edge(B, C, 8)
+    edc.add_edge(C, D, 2)
+    edc.add_edge(D, B, 3)
+    edc.add_edge(D, E, 4)
+    edc.add_edge(E, I, 7)
+    edc.add_edge(E, H, 11)
+    edc.add_edge(F, E, 10)
+    edc.add_edge(F, I, 6)
+    edc.add_edge(F, G, 5)
+    edc.add_edge(F, C, 7)
+    edc.add_edge(G, I, 6)
+    edc.add_edge(G, K, 5)
+    edc.add_edge(K, J, 9)
+    edc.add_edge(H, I, 6)
+    edc.add_edge(H, J, 8)
+    edc.add_edge(I, J, 15)
+
+    print("[ Prueba de algoritmos ]".center(term_width, '='))
+
+    print("Grafo: ")
+    edc.print_graph()
+
+    get_path(A, J)
+    get_path(A, E)

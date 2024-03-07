@@ -2,6 +2,7 @@ import math
 import time
 from typing import TypeVar, Optional, Callable
 from enum import Enum
+from random import randint
 
 T = TypeVar("T")
 
@@ -92,9 +93,9 @@ class GraphNode:
 class Graph:
     __global_time: int = -1
 
-    def __init__(self) -> None:
-        self.__root: GraphNode | None = None
-        self.__vertex: set[GraphNode] = set()
+    def __init__(self, root: Optional[GraphNode] = None, vertex: Optional[set[GraphNode]] = None) -> None:
+        self.__root: GraphNode | None = root
+        self.__vertex: set[GraphNode] = vertex if vertex else set()
 
     @property
     def vertex(self) -> set[GraphNode]:
@@ -126,8 +127,8 @@ class Graph:
             2. While the queue is not empty, dequeue a node and visit it.
             3. Enqueue all of its children (if any) into the queue.
             4. Repeat steps 2 and 3 until the queue is empty.
-            :param stop_condition: Condition to search a node and stop the algorithm
-            :return: A list with the traveled nodes
+        :param stop_condition: Condition to search a node and stop the algorithm
+        :return: A list with the traveled nodes
         """
         queue = [self.__root, ]
         path = [[self.__root, ], ]
@@ -257,8 +258,41 @@ class Graph:
                     return result
             depth += 1
 
+    # def uniform_cost_search(self, root: GraphNode, target: Callable[[T], bool]):
+    #     frontier: list[tuple[GraphNode, int]] = [(root, 0)]
+    #     explored: set[GraphNode] = set()
+    #
+    #     while True:
+    #         if not frontier:
+    #             return None
+    #
+    #         node, cost = frontier.pop(0)
+    #
+    #         if target(node.value):
+    #             return node
+    #
+    #         explored.add(node)
+    #
+    #         for n in node.neighbors:
+    #             if n not in explored:
 
-def generateTree(graph: Graph, nodeData: T, level: int, maxLevel: int, weight: int = 0) -> GraphNode:
+    @classmethod
+    def get_node_list_distance(cls, node_list: list[GraphNode]):
+        if len(node_list) < 1:
+            return -1
+        total_cost = 0
+        node, next_node = node_list.pop(0), node_list.pop(0)
+        while node_list:
+            total_cost += node.neighbors[next_node]
+
+            node = next_node
+            next_node = node_list.pop(0)
+        total_cost += node.neighbors[next_node]
+
+        return total_cost
+
+
+def generate_tree(graph: Graph, nodeData: T, level: int, maxLevel: int, weight: int = 0) -> GraphNode:
     """
     Generates a tree with the condition:
         - Left node: :math:`x-1`
@@ -276,11 +310,11 @@ def generateTree(graph: Graph, nodeData: T, level: int, maxLevel: int, weight: i
     if level >= maxLevel:
         return node
 
-    left_child = generateTree(graph, left, level + 1, maxLevel)
-    right_child = generateTree(graph, right, level + 1, maxLevel)
+    left_child = generate_tree(graph, left, level + 1, maxLevel)
+    right_child = generate_tree(graph, right, level + 1, maxLevel)
 
-    graph.add_edge(node, left_child, weight)
-    graph.add_edge(node, right_child, weight)
+    graph.add_edge(node, left_child, randint(0, 50))
+    graph.add_edge(node, right_child, randint(0, 50))
 
     return node
 
@@ -302,8 +336,53 @@ def test_algorithm(function: Callable, message: Optional[str] = None, *args, **k
 
 if __name__ == '__main__':
     tree = Graph()
-    tree.root = generateTree(tree, 25, 0, 5)
+    tree.root = generate_tree(tree, 25, 0, 5)
     test_algorithm(tree.breadth_first_search, "BFS", stop_condition=lambda x: x == 30)
     test_algorithm(tree.depth_first_search, "DFS", lambda x: x == 30)
     test_algorithm(tree.dfs_limited, "DFS Limited (depth = 5; target = 7) ", tree.root, lambda x: x == 30, 5)
     test_algorithm(tree.dfs_iterative, "DFS Iterative", tree.root, lambda x: x == 30, 5)
+
+    # tree.uniform_cost_search(tree.root, lambda x: x == 30)
+
+
+    # Del proyecto
+    A = GraphNode("A(Entrada docker)")
+    B = GraphNode("B(Recarga info)")
+    C = GraphNode("C(Dos X Stage)")
+    D = GraphNode("D(Servicios)")
+    E = GraphNode("E(Circuit G)")
+    F = GraphNode("F(Pixel Forest)")
+    G = GraphNode("G(Forest Jungle)")
+    H = GraphNode("H(Contra???)")
+    I = GraphNode("I(Bebidas)")
+    J = GraphNode("J(Kinetic)")
+    K = GraphNode("K(Surtidora?)")
+
+    A.add_neighbour(B, 5)
+    A.add_neighbour(C, 8)
+    B.add_neighbour(C, 8)
+    C.add_neighbour(B, 3)
+    C.add_neighbour(D, 2)
+    D.add_neighbour(B, 3)
+    D.add_neighbour(E, 4)
+    E.add_neighbour(I, 7)
+    E.add_neighbour(H, 11)
+    F.add_neighbour(E, 10)
+    F.add_neighbour(I, 6)
+    F.add_neighbour(G, 5)
+    G.add_neighbour(I, 6)
+    G.add_neighbour(K, 5)
+    K.add_neighbour(J, 9)
+    H.add_neighbour(I, 6)
+    H.add_neighbour(J, 8)
+    H.add_neighbour(E, 11)
+
+    EDC = Graph(A, {A, B, C, D, E, F, G, H, I, J})
+
+    # Ejemplo para obtener la distancia de un recorrido :P
+    a_to_j = EDC.breadth_first_search(lambda n: n[0] == 'J')
+    dist = Graph.get_node_list_distance(a_to_j.copy() if a_to_j else [])
+    print(f"{a_to_j} | Distance = {dist}")
+    a_to_j = EDC.dfs_limited(EDC.root, lambda n: n[0] == 'J', 15) # Sospecho que este hay que corregirlo
+    dist = Graph.get_node_list_distance(a_to_j.copy() if a_to_j else [])
+    print(f"{a_to_j} | Distance = {dist}")

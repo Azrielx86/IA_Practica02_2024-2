@@ -325,12 +325,12 @@ def print_results(path: list[GraphNode]) -> None:
     print(f"Distancia: {path_distance}")
 
 
-def get_path(nodo_inicio: GraphNode, nodo_fin: GraphNode) -> None:
+def get_path(nodo_inicio: GraphNode, nodo_fin: GraphNode, num_ruta: int = 1) -> None:
     inicio = nodo_inicio.value
     objetivo = nodo_fin.value
-    print(f"[ Ruta ]".center(term_width, '='))
-    print(f"Nodo de inicio: {inicio}")
-    print(f"Nodo objetivo: {objetivo}")
+    print(f"[ Ruta {num_ruta} ]".center(term_width, 'o'))
+    print(f"> Nodo de inicio: {inicio}")
+    print(f"> Nodo objetivo: {objetivo}")
 
     print("[ Breadth First Search ]".center(term_width, '='))
     result_path = edc.breadth_first_search(lambda n: n == objetivo)
@@ -356,18 +356,24 @@ def get_path(nodo_inicio: GraphNode, nodo_fin: GraphNode) -> None:
 # Aplicar DFS y BFS para encontrar la ruta a seguir desde la entrada hacia los escenarios
 # “Kinetic Field” y “circuit grounds”.
 if __name__ == '__main__':
-    term_width = 80
-    A = GraphNode("A")  # Entrada Docker
-    B = GraphNode("B")  # Recarga Info
-    C = GraphNode("C")  # Dos X Stage
-    D = GraphNode("D")  # Servicios
-    E = GraphNode("E")  # Circuit G
-    F = GraphNode("F")  # Pixel Forest
-    G = GraphNode("G")  # Forest Jungle
-    H = GraphNode("H")  # Cantina???
-    I = GraphNode("I")  # Bebidas
-    J = GraphNode("J")  # Kinetic
-    K = GraphNode("K")  # Surtidora
+    term_width = 70
+    print("".center(term_width, '-'))
+    print(f"|{'Facultad de Ingeniería - UNAM'.center(term_width - 2, ' ')}|")
+    print(f"|{'Inteligencia Artificial - Semestre 2024-2'.center(term_width - 2, ' ')}|")
+    print("".center(term_width, '-'))
+
+
+    A = GraphNode("Entrada")
+    B = GraphNode("Recarga Info")
+    C = GraphNode("XX Stage")
+    D = GraphNode("Servicios")
+    E = GraphNode("Circuit Grounds")
+    F = GraphNode("Pixel Forest")
+    G = GraphNode("Forest Jungle")
+    H = GraphNode("Cantina del centro")
+    I = GraphNode("Bebidas")
+    J = GraphNode("Kinetic")
+    K = GraphNode("Surtidora Sur")
     edc = Graph(A, {A, B, C, D, E, F, G, H, I, J, K})
 
     edc.add_edge(A, B, 5)
@@ -389,10 +395,10 @@ if __name__ == '__main__':
     edc.add_edge(H, J, 8)
     edc.add_edge(I, J, 15)
 
-    print("[ Prueba de algoritmos ]".center(term_width, '='))
+    print("[ Prueba de algoritmos búsqueda en grafos ]".center(term_width, '='))
 
     print("Grafo: ")
     edc.print_graph()
 
-    get_path(A, J)
-    get_path(A, E)
+    get_path(A, J, 1)
+    get_path(A, E, 2)

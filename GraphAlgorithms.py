@@ -1,6 +1,8 @@
+import os
 from typing import TypeVar, Optional, Callable
 from enum import Enum
 import bisect
+from os import get_terminal_size
 
 T = TypeVar("T")
 
@@ -356,12 +358,15 @@ def get_path(nodo_inicio: GraphNode, nodo_fin: GraphNode, num_ruta: int = 1) -> 
 # Aplicar DFS y BFS para encontrar la ruta a seguir desde la entrada hacia los escenarios
 # “Kinetic Field” y “circuit grounds”.
 if __name__ == '__main__':
-    term_width = 70
+    try:
+        term_width = os.get_terminal_size().columns
+    except OSError:
+        term_width = 80
+
     print("".center(term_width, '-'))
     print(f"|{'Facultad de Ingeniería - UNAM'.center(term_width - 2, ' ')}|")
     print(f"|{'Inteligencia Artificial - Semestre 2024-2'.center(term_width - 2, ' ')}|")
     print("".center(term_width, '-'))
-
 
     A = GraphNode("Entrada")
     B = GraphNode("Recarga Info")

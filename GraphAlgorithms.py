@@ -5,7 +5,7 @@ import bisect
 T = TypeVar("T")
 
 
-class GraphVisitStatus(Enum):
+class VisitStatus(Enum):
     """Used to declare the visited status of a node."""
     VISITED = 0
     NO_VISITED = 1
@@ -21,7 +21,7 @@ class GraphNode:
         """
         self.__value: T = value
         self.__neighbours: dict[GraphNode, int] = {}
-        self.__status: GraphVisitStatus = GraphVisitStatus.NO_VISITED
+        self.__status: VisitStatus = VisitStatus.NO_VISITED
         self.__parent: Optional[GraphNode] = None
         self.__distance: int = -1
         self.__final_distance: int = -1
@@ -67,7 +67,7 @@ class GraphNode:
         self.__distance = value
 
     @property
-    def status(self) -> GraphVisitStatus:
+    def status(self) -> VisitStatus:
         return self.__status
 
     @status.setter
@@ -140,10 +140,10 @@ class Graph:
         while len(queue) > 0:
             node = queue.pop(0)
             node_path = path.pop(0)
-            node.status = GraphVisitStatus.VISITED
+            node.status = VisitStatus.VISITED
             result.append(node)
 
-            for n in [n for n in node.neighbors if n is not n.status == GraphVisitStatus.NO_VISITED]:
+            for n in [n for n in node.neighbors if n is not n.status == VisitStatus.NO_VISITED]:
                 queue.append(n)
                 path.append([*node_path, n])
 
@@ -155,15 +155,18 @@ class Graph:
 
         return result
 
-    def __reset_vertex_status(self):
+    def __reset_vertex_status(self) -> None:
+        """
+        Reset all the nodes to No Visited
+        """
         for vertex in self.__vertex:
-            vertex.status = GraphVisitStatus.NO_VISITED
+            vertex.status = VisitStatus.NO_VISITED
 
     @classmethod
     def __dfs_visit(cls, vertex: GraphNode, visited_order: list[GraphNode],
                     target: Optional[Callable[[T], bool]] = None) -> bool:
         """Method to visit a node and its neighbors if some of those were not visited"""
-        vertex.status = GraphVisitStatus.VISITED
+        vertex.status = VisitStatus.VISITED
         cls.__global_time += 1
         vertex.distance = cls.__global_time
         visited_order.append(vertex)
@@ -172,14 +175,14 @@ class Graph:
             return True
 
         for v in vertex.neighbors:
-            if v.status == GraphVisitStatus.NO_VISITED:
+            if v.status == VisitStatus.NO_VISITED:
                 v.parent = vertex
                 if cls.__dfs_visit(v, visited_order, target):
                     cls.__global_time += 1
                     v.final_distance = cls.__global_time
                     return True
 
-        vertex.status = GraphVisitStatus.FINISHED
+        vertex.status = VisitStatus.FINISHED
         cls.__global_time += 1
         vertex.final_distance = cls.__global_time
         return False
@@ -192,7 +195,7 @@ class Graph:
         """
         visit_order = []
         for vertex in self.__vertex:
-            vertex.status = GraphVisitStatus.NO_VISITED
+            vertex.status = VisitStatus.NO_VISITED
             vertex.parent = None
 
         self.__global_time = 0
@@ -203,7 +206,7 @@ class Graph:
             return visit_order
 
         for vertex in self.__vertex:
-            if vertex.status == GraphVisitStatus.NO_VISITED:
+            if vertex.status == VisitStatus.NO_VISITED:
                 if self.__dfs_visit(vertex, visit_order, target):
                     self.__reset_vertex_status()
                     return visit_order
@@ -223,9 +226,9 @@ class Graph:
             if target(node.value):
                 return [node, ]
 
-            node.status = GraphVisitStatus.VISITED
+            node.status = VisitStatus.VISITED
 
-            for n in [n for n in node.neighbors if n.status == GraphVisitStatus.NO_VISITED]:
+            for n in [n for n in node.neighbors if n.status == VisitStatus.NO_VISITED]:
                 result = self.dfs_limited(n, target, depth - 1)
                 if result:
                     result.insert(0, node)
@@ -262,6 +265,14 @@ class Graph:
             depth += 1
 
     def uniform_cost_search(self, root: GraphNode, target: Callable[[T], bool]):
+        """
+        This algorithm uses a priority list and a explored set to determine which nodes to expand, on the priority list
+        it always will have the minor cost path at the first element, due to the use of bisect.insort to place the
+        minor cost path at the start of the list.
+        :param root: Start Node (or root node by default).
+        :param target: Function with the condition to mark a node as the target.
+        :return: Minor cost path.
+        """
         if not root:
             root = self.root
 
@@ -287,14 +298,18 @@ class Graph:
                     bisect.insort(frontier, (new_path, new_cost), key=lambda t: t[1])
 
     @classmethod
-    def get_node_list_distance(cls, node_list: list[GraphNode]):
+    def get_node_list_distance(cls, node_list: list[GraphNode]) -> int:
+        """
+        Calculates the distance traveled of a node path.
+        :param node_list: List representing the node path.
+        :return: Total cost traveled.
+        """
         if len(node_list) < 1:
             return -1
         total_cost = 0
         node, next_node = node_list.pop(0), node_list.pop(0)
         while node_list:
             total_cost += node.neighbors[next_node]
-
             node = next_node
             next_node = node_list.pop(0)
         total_cost += node.neighbors[next_node]
@@ -310,18 +325,6 @@ def print_results(path: list[GraphNode]) -> None:
 
 if __name__ == '__main__':
     term_width = 80
-    # Del proyecto
-    # A = GraphNode("A(Entrada docker)")
-    # B = GraphNode("B(Recarga info)")
-    # C = GraphNode("C(Dos X Stage)")
-    # D = GraphNode("D(Servicios)")
-    # E = GraphNode("E(Circuit G)")
-    # F = GraphNode("F(Pixel Forest)")
-    # G = GraphNode("G(Forest Jungle)")
-    # H = GraphNode("H(Contra???)")
-    # I = GraphNode("I(Bebidas)")
-    # J = GraphNode("J(Kinetic)")
-    # K = GraphNode("K(Surtidora?)")
     A = GraphNode("A")
     B = GraphNode("B")
     C = GraphNode("C")

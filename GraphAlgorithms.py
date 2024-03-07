@@ -2,7 +2,7 @@ import math
 import time
 from typing import TypeVar, Optional, Callable
 from enum import Enum
-from random import randint
+import bisect
 
 T = TypeVar("T")
 
@@ -258,23 +258,27 @@ class Graph:
                     return result
             depth += 1
 
-    # def uniform_cost_search(self, root: GraphNode, target: Callable[[T], bool]):
-    #     frontier: list[tuple[GraphNode, int]] = [(root, 0)]
-    #     explored: set[GraphNode] = set()
-    #
-    #     while True:
-    #         if not frontier:
-    #             return None
-    #
-    #         node, cost = frontier.pop(0)
-    #
-    #         if target(node.value):
-    #             return node
-    #
-    #         explored.add(node)
-    #
-    #         for n in node.neighbors:
-    #             if n not in explored:
+    def uniform_cost_search(self, root: GraphNode, target: Callable[[T], bool]):
+        frontier: list[tuple[list[GraphNode], int]] = [([root, ], 0)]
+        explored: set[GraphNode] = set()
+
+        while True:
+            if not frontier:
+                return None
+
+            path, cost = frontier.pop(0)
+            node = path[-1]
+
+            explored.add(node)
+
+            for n in node.neighbors:
+                if n not in explored:
+                    new_cost = cost + node.neighbors[n]
+                    new_path = [*path, n]
+                    bisect.insort(frontier, (new_path, new_cost), key=lambda t: t[1])
+
+                    if target(n.value):
+                        return new_path
 
     @classmethod
     def get_node_list_distance(cls, node_list: list[GraphNode]):
@@ -290,33 +294,6 @@ class Graph:
         total_cost += node.neighbors[next_node]
 
         return total_cost
-
-
-def generate_tree(graph: Graph, nodeData: T, level: int, maxLevel: int, weight: int = 0) -> GraphNode:
-    """
-    Generates a tree with the condition:
-        - Left node: :math:`x-1`
-        - Right node: :math:`\\sqrt{x}`
-    :param graph: Main Graph to add the node
-    :param weight: Weight of the node
-    :param maxLevel: Max height of the tree
-    :param nodeData: integer to the node
-    :param level: Current level of the generated node in the tree
-    :return: The last created node, if it is the first call to the function, then it will return the root node.
-    """
-    node = GraphNode(nodeData)
-    left, right = nodeData + 1, int(math.sqrt(nodeData))
-
-    if level >= maxLevel:
-        return node
-
-    left_child = generate_tree(graph, left, level + 1, maxLevel)
-    right_child = generate_tree(graph, right, level + 1, maxLevel)
-
-    graph.add_edge(node, left_child, randint(0, 50))
-    graph.add_edge(node, right_child, randint(0, 50))
-
-    return node
 
 
 def test_algorithm(function: Callable, message: Optional[str] = None, *args, **kwargs) -> None:
@@ -335,54 +312,56 @@ def test_algorithm(function: Callable, message: Optional[str] = None, *args, **k
 
 
 if __name__ == '__main__':
-    tree = Graph()
-    tree.root = generate_tree(tree, 25, 0, 5)
-    test_algorithm(tree.breadth_first_search, "BFS", stop_condition=lambda x: x == 30)
-    test_algorithm(tree.depth_first_search, "DFS", lambda x: x == 30)
-    test_algorithm(tree.dfs_limited, "DFS Limited (depth = 5; target = 7) ", tree.root, lambda x: x == 30, 5)
-    test_algorithm(tree.dfs_iterative, "DFS Iterative", tree.root, lambda x: x == 30, 5)
-
-    # tree.uniform_cost_search(tree.root, lambda x: x == 30)
-
-
     # Del proyecto
-    A = GraphNode("A(Entrada docker)")
-    B = GraphNode("B(Recarga info)")
-    C = GraphNode("C(Dos X Stage)")
-    D = GraphNode("D(Servicios)")
-    E = GraphNode("E(Circuit G)")
-    F = GraphNode("F(Pixel Forest)")
-    G = GraphNode("G(Forest Jungle)")
-    H = GraphNode("H(Contra???)")
-    I = GraphNode("I(Bebidas)")
-    J = GraphNode("J(Kinetic)")
-    K = GraphNode("K(Surtidora?)")
-
-    A.add_neighbour(B, 5)
-    A.add_neighbour(C, 8)
-    B.add_neighbour(C, 8)
-    C.add_neighbour(B, 3)
-    C.add_neighbour(D, 2)
-    D.add_neighbour(B, 3)
-    D.add_neighbour(E, 4)
-    E.add_neighbour(I, 7)
-    E.add_neighbour(H, 11)
-    F.add_neighbour(E, 10)
-    F.add_neighbour(I, 6)
-    F.add_neighbour(G, 5)
-    G.add_neighbour(I, 6)
-    G.add_neighbour(K, 5)
-    K.add_neighbour(J, 9)
-    H.add_neighbour(I, 6)
-    H.add_neighbour(J, 8)
-    H.add_neighbour(E, 11)
-
+    # A = GraphNode("A(Entrada docker)")
+    # B = GraphNode("B(Recarga info)")
+    # C = GraphNode("C(Dos X Stage)")
+    # D = GraphNode("D(Servicios)")
+    # E = GraphNode("E(Circuit G)")
+    # F = GraphNode("F(Pixel Forest)")
+    # G = GraphNode("G(Forest Jungle)")
+    # H = GraphNode("H(Contra???)")
+    # I = GraphNode("I(Bebidas)")
+    # J = GraphNode("J(Kinetic)")
+    # K = GraphNode("K(Surtidora?)")
+    A = GraphNode("A")
+    B = GraphNode("B")
+    C = GraphNode("C")
+    D = GraphNode("D")
+    E = GraphNode("E")
+    F = GraphNode("F")
+    G = GraphNode("G")
+    H = GraphNode("H")
+    I = GraphNode("I")
+    J = GraphNode("J")
+    K = GraphNode("K")
     EDC = Graph(A, {A, B, C, D, E, F, G, H, I, J})
+
+    EDC.add_edge(A, B, 5)
+    EDC.add_edge(A, C, 8)
+    EDC.add_edge(B, C, 8)
+    EDC.add_edge(C, D, 2)
+    EDC.add_edge(D, B, 3)
+    EDC.add_edge(D, E, 4)
+    EDC.add_edge(E, I, 7)
+    EDC.add_edge(E, H, 11)
+    EDC.add_edge(F, E, 10)
+    EDC.add_edge(F, I, 6)
+    EDC.add_edge(F, G, 5)
+    EDC.add_edge(F, C, 7)
+    EDC.add_edge(G, I, 6)
+    EDC.add_edge(G, K, 5)
+    EDC.add_edge(K, J, 9)
+    EDC.add_edge(H, I, 6)
+    EDC.add_edge(H, J, 8)
 
     # Ejemplo para obtener la distancia de un recorrido :P
     a_to_j = EDC.breadth_first_search(lambda n: n[0] == 'J')
     dist = Graph.get_node_list_distance(a_to_j.copy() if a_to_j else [])
     print(f"{a_to_j} | Distance = {dist}")
-    a_to_j = EDC.dfs_limited(EDC.root, lambda n: n[0] == 'J', 15) # Sospecho que este hay que corregirlo
+    a_to_j = EDC.dfs_limited(EDC.root, lambda n: n[0] == 'J', 15)  # Sospecho que este hay que corregirlo
     dist = Graph.get_node_list_distance(a_to_j.copy() if a_to_j else [])
     print(f"{a_to_j} | Distance = {dist}")
+
+    # Test costo uniforme
+    print(EDC.uniform_cost_search(EDC.root, lambda n: n[0] == 'J'))

@@ -107,6 +107,11 @@ class Graph:
     def root(self, value: GraphNode) -> None:
         self.__root = value
 
+    def print_graph(self):
+        for node in sorted(list(self.__vertex), key=lambda n: n.value):
+            nb = [*map(lambda n: f"\033[0;32m{n[0]}\033[0;37m: \033[0;36m{n[1]}\033[0;37m", node.neighbors.items())]
+            print(f"{node.value} -> {{{', '.join(nb)}}}")
+
     def add_edge(self, node1: GraphNode, node2: GraphNode, weight: int) -> None:
         """Adds an edge to the graph, and adds both nodes to their respective neighbors list."""
         node1.add_neighbour(node2, weight)
@@ -272,14 +277,14 @@ class Graph:
 
             explored.add(node)
 
+            if target(node.value):
+                return path
+
             for n in node.neighbors:
                 if n not in explored:
                     new_cost = cost + node.neighbors[n]
                     new_path = [*path, n]
                     bisect.insort(frontier, (new_path, new_cost), key=lambda t: t[1])
-
-                    if target(n.value):
-                        return new_path
 
     @classmethod
     def get_node_list_distance(cls, node_list: list[GraphNode]):
@@ -347,11 +352,16 @@ if __name__ == '__main__':
     edc.add_edge(K, J, 9)
     edc.add_edge(H, I, 6)
     edc.add_edge(H, J, 8)
+    edc.add_edge(I, J, 15)
 
     inicio = A.value
     objetivo = J.value
 
     print("[ Prueba de algoritmos ]".center(term_width, '='))
+
+    print("Grafo: ")
+    edc.print_graph()
+
     print(f"Nodo de inicio: {inicio}")
     print(f"Nodo objetivo: {objetivo}")
 

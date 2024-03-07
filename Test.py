@@ -1,4 +1,7 @@
 from GraphAlgorithms import *
+import math
+import os
+import time
 
 
 def generate_tree(graph: Graph, nodeData: T, level: int, maxLevel: int, weight: int = 0) -> GraphNode:
@@ -26,6 +29,21 @@ def generate_tree(graph: Graph, nodeData: T, level: int, maxLevel: int, weight: 
     graph.add_edge(node, right_child, right)
 
     return node
+
+
+def test_algorithm(function: Callable, message: Optional[str] = None, *args, **kwargs) -> None:
+    """
+    Function to test the execution time of a function,
+    :param function: Function to test
+    :param message: An optional message that will appear at the start of the message result,
+                    if not defined it will be the function name
+    :param args: Optional arguments of the function
+    :param kwargs: Optional keyword arguments of the function
+    """
+    start = time.perf_counter()
+    ret = function(*args, **kwargs)
+    end = time.perf_counter()
+    print(f"{message if message is not None else function} [Exec Time = {end - start:0.5e}]: {ret}")
 
 
 if __name__ == '__main__':

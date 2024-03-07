@@ -1,5 +1,3 @@
-import math
-import time
 from typing import TypeVar, Optional, Callable
 from enum import Enum
 import bisect
@@ -259,6 +257,9 @@ class Graph:
             depth += 1
 
     def uniform_cost_search(self, root: GraphNode, target: Callable[[T], bool]):
+        if not root:
+            root = self.root
+
         frontier: list[tuple[list[GraphNode], int]] = [([root, ], 0)]
         explored: set[GraphNode] = set()
 
@@ -296,22 +297,14 @@ class Graph:
         return total_cost
 
 
-def test_algorithm(function: Callable, message: Optional[str] = None, *args, **kwargs) -> None:
-    """
-    Function to test the execution time of a function,
-    :param function: Function to test
-    :param message: An optional message that will appear at the start of the message result,
-                    if not defined it will be the function name
-    :param args: Optional arguments of the function
-    :param kwargs: Optional keyword arguments of the function
-    """
-    start = time.perf_counter()
-    ret = function(*args, **kwargs)
-    end = time.perf_counter()
-    print(f"{message if message is not None else function} [Exec Time = {end - start:0.5e}]: {ret}")
+def print_results(path: list[GraphNode]) -> None:
+    print(f"Camino: {path}")
+    path_distance = Graph.get_node_list_distance(path)
+    print(f"Distancia: {path_distance}")
 
 
 if __name__ == '__main__':
+    term_width = 80
     # Del proyecto
     # A = GraphNode("A(Entrada docker)")
     # B = GraphNode("B(Recarga info)")
@@ -335,33 +328,49 @@ if __name__ == '__main__':
     I = GraphNode("I")
     J = GraphNode("J")
     K = GraphNode("K")
-    EDC = Graph(A, {A, B, C, D, E, F, G, H, I, J})
+    edc = Graph(A, {A, B, C, D, E, F, G, H, I, J, K})
 
-    EDC.add_edge(A, B, 5)
-    EDC.add_edge(A, C, 8)
-    EDC.add_edge(B, C, 8)
-    EDC.add_edge(C, D, 2)
-    EDC.add_edge(D, B, 3)
-    EDC.add_edge(D, E, 4)
-    EDC.add_edge(E, I, 7)
-    EDC.add_edge(E, H, 11)
-    EDC.add_edge(F, E, 10)
-    EDC.add_edge(F, I, 6)
-    EDC.add_edge(F, G, 5)
-    EDC.add_edge(F, C, 7)
-    EDC.add_edge(G, I, 6)
-    EDC.add_edge(G, K, 5)
-    EDC.add_edge(K, J, 9)
-    EDC.add_edge(H, I, 6)
-    EDC.add_edge(H, J, 8)
+    edc.add_edge(A, B, 5)
+    edc.add_edge(A, C, 8)
+    edc.add_edge(B, C, 8)
+    edc.add_edge(C, D, 2)
+    edc.add_edge(D, B, 3)
+    edc.add_edge(D, E, 4)
+    edc.add_edge(E, I, 7)
+    edc.add_edge(E, H, 11)
+    edc.add_edge(F, E, 10)
+    edc.add_edge(F, I, 6)
+    edc.add_edge(F, G, 5)
+    edc.add_edge(F, C, 7)
+    edc.add_edge(G, I, 6)
+    edc.add_edge(G, K, 5)
+    edc.add_edge(K, J, 9)
+    edc.add_edge(H, I, 6)
+    edc.add_edge(H, J, 8)
 
-    # Ejemplo para obtener la distancia de un recorrido :P
-    a_to_j = EDC.breadth_first_search(lambda n: n[0] == 'J')
-    dist = Graph.get_node_list_distance(a_to_j.copy() if a_to_j else [])
-    print(f"{a_to_j} | Distance = {dist}")
-    a_to_j = EDC.dfs_limited(EDC.root, lambda n: n[0] == 'J', 15)  # Sospecho que este hay que corregirlo
-    dist = Graph.get_node_list_distance(a_to_j.copy() if a_to_j else [])
-    print(f"{a_to_j} | Distance = {dist}")
+    inicio = A.value
+    objetivo = J.value
 
-    # Test costo uniforme
-    print(EDC.uniform_cost_search(EDC.root, lambda n: n[0] == 'J'))
+    print("[ Prueba de algoritmos ]".center(term_width, '='))
+    print(f"Nodo de inicio: {inicio}")
+    print(f"Nodo objetivo: {objetivo}")
+
+    print("[ Breadth First Search ]".center(term_width, '='))
+    result_path = edc.breadth_first_search(lambda n: n == objetivo)
+    print_results(result_path)
+
+    print("[ Depth First Search ]".center(term_width, '='))
+    result_path = edc.depth_first_search(lambda n: n == objetivo)
+    print_results(result_path)
+
+    print("[ Depth First Search Limitado ]".center(term_width, '='))
+    result_path = edc.dfs_limited(edc.root, lambda n: n == objetivo, 6)
+    print_results(result_path)
+
+    print("[ Depth First Search Iterativo ]".center(term_width, '='))
+    result_path = edc.dfs_iterative(edc.root, lambda n: n == objetivo, 6)
+    print_results(result_path)
+
+    print("[ Búsqueda de Costo Uniforme ]".center(term_width, '='))
+    result_path = edc.uniform_cost_search(edc.root, lambda n: n == objetivo)
+    print_results(result_path)

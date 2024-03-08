@@ -1,8 +1,7 @@
-import os
-from typing import TypeVar, Optional, Callable
-from enum import Enum
 import bisect
-from os import get_terminal_size
+import os
+from enum import Enum
+from typing import TypeVar, Optional, Callable
 
 T = TypeVar("T")
 
@@ -145,7 +144,7 @@ class Graph:
             node.status = VisitStatus.VISITED
             result.append(node)
 
-            for n in [n for n in node.neighbors if n is not n.status == VisitStatus.NO_VISITED]:
+            for n in [n for n in node.neighbors if n is not n.status == VisitStatus.NO_VISITED and n not in queue]:
                 queue.append(n)
                 path.append([*node_path, n])
 
@@ -270,7 +269,7 @@ class Graph:
 
     def uniform_cost_search(self, root: GraphNode, target: Callable[[T], bool]):
         """
-        This algorithm uses a priority list and a explored set to determine which nodes to expand, on the priority list
+        This algorithm uses a priority list and an explored set to determine which nodes to expand, on the priority list
         it always will have the minor cost path at the first element, due to the use of bisect.insort to place the
         minor cost path at the start of the list.
         :param root: Start Node (or root node by default).
@@ -368,17 +367,17 @@ if __name__ == '__main__':
     print(f"|{'Inteligencia Artificial - Semestre 2024-2'.center(term_width - 2, ' ')}|")
     print("".center(term_width, '-'))
 
-    A = GraphNode("Entrada")
-    B = GraphNode("Recarga Info")
-    C = GraphNode("XX Stage")
-    D = GraphNode("Servicios")
-    E = GraphNode("Circuit Grounds")
-    F = GraphNode("Pixel Forest")
-    G = GraphNode("Forest Jungle")
-    H = GraphNode("Cantina del centro")
-    I = GraphNode("Bebidas")
-    J = GraphNode("Kinetic")
-    K = GraphNode("Surtidora Sur")
+    A = GraphNode("A")
+    B = GraphNode("B")
+    C = GraphNode("C")
+    D = GraphNode("D")
+    E = GraphNode("E")
+    F = GraphNode("F")
+    G = GraphNode("G")
+    H = GraphNode("H")
+    I = GraphNode("I")
+    J = GraphNode("J")
+    K = GraphNode("K")
     edc = Graph(A, {A, B, C, D, E, F, G, H, I, J, K})
 
     edc.add_edge(A, B, 5)

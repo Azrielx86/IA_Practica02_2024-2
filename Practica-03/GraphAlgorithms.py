@@ -2,6 +2,7 @@ import heapq
 import os
 from enum import Enum
 from typing import TypeVar, Optional, Callable
+from math import inf
 
 # noinspection DuplicatedCode
 T = TypeVar("T")
@@ -117,7 +118,8 @@ class Graph:
         self.__root = value
 
     def print_graph(self) -> None:
-        for node in sorted(list(self.__vertex), key=lambda n: n.value):
+        # for node in sorted(list(self.__vertex), key=lambda n: n.value):
+        for node in list(self.__vertex):
             nb = [*map(lambda n: f"\033[0;32m{n[0]}\033[0;37m: \033[0;36m{n[1]}\033[0;37m", node.neighbors.items())]
             print(f"{node.value} -> {{{', '.join(nb)}}}")
 
@@ -133,15 +135,13 @@ class Graph:
             self.__vertex.add(node2)
 
     @classmethod
-    def calc_heuristic(cls, start: GraphNode, target: GraphNode):
-        return start.neighbors.get(target, 0)
-
-    def a_star(self, start: GraphNode, target: GraphNode) -> Optional[list[GraphNode]]:
+    def a_star(cls, start: GraphNode, target: GraphNode, calc_heuristic: Callable[[GraphNode, GraphNode], int]) -> \
+            Optional[list[GraphNode]]:
         close_nodes = []
         open_nodes: set[GraphNode] = {start}
 
         start.g = 0
-        start.h = self.calc_heuristic(start, target)
+        start.h = calc_heuristic(start, target)
         start.f = start.g + start.h
 
         while open_nodes:
@@ -163,7 +163,7 @@ class Graph:
                 new_cost = current.g + current.neighbors[vecino]  # costo actual del camino hasta el vecino
                 if vecino not in open_nodes or new_cost < vecino.g:
                     vecino.g = new_cost
-                    vecino.h = self.calc_heuristic(vecino, target)
+                    vecino.h = calc_heuristic(vecino, target)
                     vecino.f = vecino.g + vecino.h
                     vecino.parent = current
                     if vecino not in open_nodes:
@@ -171,18 +171,95 @@ class Graph:
 
         return None
 
+    def ascenso_colina(self, inicio: GraphNode, get_value: Callable[[GraphNode], int]):
+        actual = inicio
+        mejor_vecino = GraphNode(None)
+        while mejor_vecino:
+            mejor_vecino = None
+            mejor_valor = get_value(actual)
+            for v in actual.neighbors:
+                if get_value(v) < mejor_valor:
+                    mejor_vecino = v
+                    mejor_valor = get_value(v)
+            if mejor_vecino is None:
+                return actual
+            actual = mejor_vecino
+        return actual
 
-def test():
-    sn = GraphNode("S")
-    an = GraphNode("A")
-    bn = GraphNode("B")
-    cn = GraphNode("C")
-    dn = GraphNode("D")
-    en = GraphNode("E")
-    fn = GraphNode("F")
-    gn = GraphNode("G")
-    inn = GraphNode("I")
-    xn = GraphNode("X")
+
+class Sitio:
+    def __init__(self, nombre: str, interes: int) -> None:
+        self.__nombre: str = nombre
+        self.__interes: int = interes
+
+    @property
+    def nombre(self) -> str:
+        return self.__nombre
+
+    @nombre.setter
+    def nombre(self, value):
+        self.__nombre = value
+
+    @property
+    def interes(self) -> int:
+        return self.__interes
+
+    @interes.setter
+    def interes(self, value):
+        self.__interes = value
+
+    def __str__(self) -> str:
+        return f"{self.__nombre} | Interés {self.__interes}"
+
+    def __repr__(self) -> str:
+        return self.__str__()
+
+# def heuristica_pc(start: GraphNode, target: GraphNode) -> int:
+#     while node := target.parent:
+
+
+
+def test_ac():
+    an = GraphNode(Sitio("A", 10))
+    bn = GraphNode(Sitio("B", 10))
+    cn = GraphNode(Sitio("C", 2))
+    dn = GraphNode(Sitio("D", 4))
+    en = GraphNode(Sitio("E", 5))
+    fn = GraphNode(Sitio("F", 7))
+    gn = GraphNode(Sitio("G", 3))
+    inn = GraphNode(Sitio("I", 6))
+    kn = GraphNode(Sitio("K", 0))
+    graph = Graph(an, {an, bn, cn, dn, en, fn, gn, inn, kn})
+
+    graph.add_edge(an, bn, 0)
+    graph.add_edge(bn, dn, 0)
+    graph.add_edge(bn, cn, 0)
+    graph.add_edge(cn, kn, 0)
+    graph.add_edge(an, fn, 0)
+    graph.add_edge(fn, en, 0)
+    graph.add_edge(fn, gn, 0)
+    graph.add_edge(en, inn, 0)
+    graph.add_edge(inn, kn, 0)
+
+    graph.print_graph()
+
+    res = graph.ascenso_colina(an, lambda n: n.value.interes)
+    print(res)
+
+    exit(0)
+
+
+def test_a_star():
+    sn = GraphNode(Sitio("S", 0))
+    an = GraphNode(Sitio("A", 0))
+    bn = GraphNode(Sitio("B", 0))
+    cn = GraphNode(Sitio("C", 0))
+    dn = GraphNode(Sitio("D", 0))
+    en = GraphNode(Sitio("E", 0))
+    fn = GraphNode(Sitio("F", 0))
+    gn = GraphNode(Sitio("G", 0))
+    inn = GraphNode(Sitio("I", 0))
+    xn = GraphNode(Sitio("X", 0))
     graph = Graph(sn, {sn, an, bn, cn, dn, en, fn, gn, inn, xn})
 
     graph.add_edge(sn, an, 5)
@@ -203,14 +280,14 @@ def test():
 
     graph.print_graph()
 
-    path = graph.a_star(sn, xn)
+    path = graph.a_star(sn, xn, lambda s, t: 0)
     print(path)
 
     exit(0)
 
 
 if __name__ == '__main__':
-    test()
+    test_ac()
     # noinspection DuplicatedCode
     try:
         term_width = os.get_terminal_size().columns

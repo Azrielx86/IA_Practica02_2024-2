@@ -1,8 +1,7 @@
-import heapq
 import os
 from enum import Enum
-from typing import TypeVar, Optional, Callable
-from math import inf
+from typing import TypeVar, Optional, Callable, Generic
+from math import sqrt
 
 # noinspection DuplicatedCode
 T = TypeVar("T")
@@ -15,7 +14,7 @@ class VisitStatus(Enum):
     FINISHED = 2
 
 
-class GraphNode:
+class GraphNode(Generic[T]):
     """Node class for a graph"""
 
     def __init__(self, value: T) -> None:
@@ -135,7 +134,7 @@ class Graph:
             self.__vertex.add(node2)
 
     @classmethod
-    def a_star(cls, start: GraphNode, target: GraphNode, calc_heuristic: Callable[[GraphNode, GraphNode], int]) -> \
+    def a_star(cls, start: GraphNode, target: GraphNode, calc_heuristic: Callable[[GraphNode[T], GraphNode[T]], float]) -> \
             Optional[list[GraphNode]]:
         close_nodes = []
         open_nodes: set[GraphNode] = {start}
@@ -188,9 +187,10 @@ class Graph:
 
 
 class Sitio:
-    def __init__(self, nombre: str, interes: int) -> None:
+    def __init__(self, nombre: str, interes: int, coordinates: tuple[float, float] = None) -> None:
         self.__nombre: str = nombre
         self.__interes: int = interes
+        self.__coordinates: tuple[float, float] = coordinates or [0, 0]
 
     @property
     def nombre(self) -> str:
@@ -208,27 +208,37 @@ class Sitio:
     def interes(self, value):
         self.__interes = value
 
+    @property
+    def coordinates(self) -> tuple[float, float]:
+        return self.__coordinates
+
+    @coordinates.setter
+    def coordinates(self, value: tuple[float, float]) -> None:
+        self.__coordinates = value
+
     def __str__(self) -> str:
-        return f"{self.__nombre} | Interés {self.__interes}"
+        return f"{self.__nombre}"
 
     def __repr__(self) -> str:
         return self.__str__()
 
-# def heuristica_pc(start: GraphNode, target: GraphNode) -> int:
-#     while node := target.parent:
+
+def distancia_euclidiana(start: GraphNode[Sitio], target: GraphNode[Sitio]):
+    start = start.value.coordinates
+    target = target.value.coordinates
+    return sqrt((target[0] - start[0]) ** 2 + (target[1] - start[0]) ** 2)
 
 
-
-def test_ac():
-    an = GraphNode(Sitio("A", 10))
-    bn = GraphNode(Sitio("B", 10))
-    cn = GraphNode(Sitio("C", 2))
-    dn = GraphNode(Sitio("D", 4))
-    en = GraphNode(Sitio("E", 5))
-    fn = GraphNode(Sitio("F", 7))
-    gn = GraphNode(Sitio("G", 3))
-    inn = GraphNode(Sitio("I", 6))
-    kn = GraphNode(Sitio("K", 0))
+def try_ac():
+    an = GraphNode(Sitio("A", 10, (439.598, 424.307)))
+    bn = GraphNode(Sitio("B", 10, (614.367, 30.161)))
+    cn = GraphNode(Sitio("C", 2, (-588.976, -806.164)))
+    dn = GraphNode(Sitio("D", 4, (401.412, 566.136)))
+    en = GraphNode(Sitio("E", 5, (877.074, -734.039)))
+    fn = GraphNode(Sitio("F", 7, (-996.801, -542.331)))
+    gn = GraphNode(Sitio("G", 3, (199.014, 184.943)))
+    inn = GraphNode(Sitio("I", 6, (455.390, -538.894)))
+    kn = GraphNode(Sitio("K", 0, (137.108, -880.055)))
     graph = Graph(an, {an, bn, cn, dn, en, fn, gn, inn, kn})
 
     graph.add_edge(an, bn, 0)
@@ -249,17 +259,17 @@ def test_ac():
     exit(0)
 
 
-def test_a_star():
-    sn = GraphNode(Sitio("S", 0))
-    an = GraphNode(Sitio("A", 0))
-    bn = GraphNode(Sitio("B", 0))
-    cn = GraphNode(Sitio("C", 0))
-    dn = GraphNode(Sitio("D", 0))
-    en = GraphNode(Sitio("E", 0))
-    fn = GraphNode(Sitio("F", 0))
-    gn = GraphNode(Sitio("G", 0))
-    inn = GraphNode(Sitio("I", 0))
-    xn = GraphNode(Sitio("X", 0))
+def try_a_star():
+    sn = GraphNode(Sitio("S", 0, (-440.502, 263.031)))
+    an = GraphNode(Sitio("A", 0, (702.810, 914.884)))
+    bn = GraphNode(Sitio("B", 0, (-569.107, -922.481)))
+    cn = GraphNode(Sitio("C", 0, (-24.522, 341.471)))
+    dn = GraphNode(Sitio("D", 0, (-497.141, -955.113)))
+    en = GraphNode(Sitio("E", 0, (58.290, -258.996)))
+    fn = GraphNode(Sitio("F", 0, (-826.221, 985.318)))
+    gn = GraphNode(Sitio("G", 0, (-31.884, 961.903)))
+    inn = GraphNode(Sitio("I", 0, (-636.744, -679.653)))
+    xn = GraphNode(Sitio("X", 0, (962.521, 891.126)))
     graph = Graph(sn, {sn, an, bn, cn, dn, en, fn, gn, inn, xn})
 
     graph.add_edge(sn, an, 5)
@@ -280,14 +290,14 @@ def test_a_star():
 
     graph.print_graph()
 
-    path = graph.a_star(sn, xn, lambda s, t: 0)
+    path = graph.a_star(sn, xn, distancia_euclidiana)
     print(path)
 
     exit(0)
 
 
 if __name__ == '__main__':
-    test_ac()
+    try_a_star()
     # noinspection DuplicatedCode
     try:
         term_width = os.get_terminal_size().columns

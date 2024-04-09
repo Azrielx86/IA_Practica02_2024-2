@@ -134,7 +134,7 @@ class Graph:
             self.__vertex.add(node2)
 
     @classmethod
-    def a_star(cls, start: GraphNode, target: GraphNode, calc_heuristic: Callable[[GraphNode[T], GraphNode[T]], float]) -> \
+    def a_star(cls, start: GraphNode, target: GraphNode, calc_heuristic: Callable[[GraphNode, GraphNode], float]) -> \
             Optional[list[GraphNode]]:
         close_nodes = []
         open_nodes: set[GraphNode] = {start}
@@ -170,7 +170,8 @@ class Graph:
 
         return None
 
-    def ascenso_colina(self, inicio: GraphNode, get_value: Callable[[GraphNode], int]):
+    @classmethod
+    def ascenso_colina(cls, inicio: GraphNode, get_value: Callable[[GraphNode], int]):
         actual = inicio
         mejor_vecino = GraphNode(None)
         while mejor_vecino:

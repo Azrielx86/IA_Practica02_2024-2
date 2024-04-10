@@ -2,9 +2,12 @@ import os
 from enum import Enum
 from typing import TypeVar, Optional, Callable, Generic
 from math import sqrt
+from random import randint, sample
 
 # noinspection DuplicatedCode
 T = TypeVar("T")
+
+interes = 100
 
 
 class VisitStatus(Enum):
@@ -122,7 +125,7 @@ class Graph:
             nb = [*map(lambda n: f"\033[0;32m{n[0]}\033[0;37m: \033[0;36m{n[1]}\033[0;37m", node.neighbors.items())]
             print(f"{node.value} -> {{{', '.join(nb)}}}")
 
-    def add_edge(self, node1: GraphNode, node2: GraphNode, weight: int) -> None:
+    def add_edge(self, node1: GraphNode, node2: GraphNode, weight: int = 0) -> None:
         """Adds an edge to the graph, and adds both nodes to their respective neighbors list."""
         node1.add_neighbour(node2, weight)
         node2.add_neighbour(node1, weight)
@@ -171,7 +174,7 @@ class Graph:
         return None
 
     @classmethod
-    def ascenso_colina(cls, inicio: GraphNode, get_value: Callable[[GraphNode], int]):
+    def ascenso_colina(cls, inicio: GraphNode[T], get_value: Callable[[GraphNode[T]], int]) -> GraphNode[T]:
         actual = inicio
         mejor_vecino = GraphNode(None)
         while mejor_vecino:
@@ -225,123 +228,116 @@ class Sitio:
 
 
 def heuristic_p03(start: GraphNode[Sitio], target: GraphNode[Sitio]) -> float:
+    global interes
     pos1 = start.value.coordinates
     pos2 = target.value.coordinates
-    interes = start.neighbors.get(target, 0)
-    return sqrt((pos2[0] - pos1[0]) ** 2 + (pos2[1] - pos1[1]) ** 2) + interes
-
-
-def try_ac():
-    an = GraphNode(Sitio("A", 10, (439.598, 424.307)))
-    bn = GraphNode(Sitio("B", 10, (614.367, 30.161)))
-    cn = GraphNode(Sitio("C", 2, (-588.976, -806.164)))
-    dn = GraphNode(Sitio("D", 4, (401.412, 566.136)))
-    en = GraphNode(Sitio("E", 5, (877.074, -734.039)))
-    fn = GraphNode(Sitio("F", 7, (-996.801, -542.331)))
-    gn = GraphNode(Sitio("G", 3, (199.014, 184.943)))
-    inn = GraphNode(Sitio("I", 6, (455.390, -538.894)))
-    kn = GraphNode(Sitio("K", 0, (137.108, -880.055)))
-    graph = Graph(an, {an, bn, cn, dn, en, fn, gn, inn, kn})
-
-    graph.add_edge(an, bn, 0)
-    graph.add_edge(bn, dn, 0)
-    graph.add_edge(bn, cn, 0)
-    graph.add_edge(cn, kn, 0)
-    graph.add_edge(an, fn, 0)
-    graph.add_edge(fn, en, 0)
-    graph.add_edge(fn, gn, 0)
-    graph.add_edge(en, inn, 0)
-    graph.add_edge(inn, kn, 0)
-
-    graph.print_graph()
-
-    res = graph.ascenso_colina(an, lambda n: n.value.interes)
-    print(res)
-
-    exit(0)
-
-
-def try_a_star():
-    sn = GraphNode(Sitio("S", 0, (-440.502, 263.031)))
-    an = GraphNode(Sitio("A", 0, (702.810, 914.884)))
-    bn = GraphNode(Sitio("B", 0, (-569.107, -922.481)))
-    cn = GraphNode(Sitio("C", 0, (-24.522, 341.471)))
-    dn = GraphNode(Sitio("D", 0, (-497.141, -955.113)))
-    en = GraphNode(Sitio("E", 0, (58.290, -258.996)))
-    fn = GraphNode(Sitio("F", 0, (-826.221, 985.318)))
-    gn = GraphNode(Sitio("G", 0, (-31.884, 961.903)))
-    inn = GraphNode(Sitio("I", 0, (-636.744, -679.653)))
-    xn = GraphNode(Sitio("X", 0, (962.521, 891.126)))
-    graph = Graph(sn, {sn, an, bn, cn, dn, en, fn, gn, inn, xn})
-
-    graph.add_edge(sn, an, 5)
-    graph.add_edge(sn, bn, 9)
-    graph.add_edge(sn, cn, 6)
-    graph.add_edge(sn, dn, 6)
-    graph.add_edge(an, bn, 3)
-    graph.add_edge(bn, cn, 1)
-    graph.add_edge(cn, dn, 2)
-    graph.add_edge(an, gn, 9)
-    graph.add_edge(bn, xn, 7)
-    graph.add_edge(cn, inn, 5)
-    graph.add_edge(cn, fn, 7)
-    graph.add_edge(fn, inn, 5)
-    graph.add_edge(inn, xn, 3)
-    graph.add_edge(dn, en, 2)
-    graph.add_edge(en, xn, 3)
-
-    graph.print_graph()
-
-    path = graph.a_star(sn, xn, heuristic_p03)
-    print(path)
-
-    exit(0)
+    interes_nodo = start.neighbors.get(target, 0)
+    heuristica = sqrt((pos2[0] - pos1[0]) ** 2 + (pos2[1] - pos1[1]) ** 2) + interes_nodo
+    interes -= heuristica % 10
+    return heuristica
 
 
 if __name__ == '__main__':
-    try_a_star()
     # noinspection DuplicatedCode
     try:
         term_width = os.get_terminal_size().columns
     except OSError:
-        term_width = 80
+        term_width = 120
 
-    root = GraphNode(Sitio("FI UNAM"))
-    n00 = GraphNode(Sitio("Auditorio Nacional"))
-    n01 = GraphNode(Sitio("Concierto Islas"))
-    n02 = GraphNode(Sitio("Palacio de los deportes"))
-    n03 = GraphNode(Sitio("Parque bicentenario"))
-    n04 = GraphNode(Sitio("Friki Plaza"))
-    n05 = GraphNode(Sitio("Cineteca Nacional"))
-    n06 = GraphNode(Sitio("Mercado Coyoacán"))
-    n07 = GraphNode(Sitio("Torre Latino"))
-    # n08 = GraphNode(Sitio("Acuario Inbursa"))
-    n09 = GraphNode(Sitio("Chapultepec"))
-    n0a = GraphNode(Sitio("Soumaya"))
-    # n0b = GraphNode(Sitio("Parque hundido"))
-    n0c = GraphNode(Sitio("Feria Aztlan"))
-    n0d = GraphNode(Sitio("Sushi Roll"))
-    n0e = GraphNode(Sitio("Burguer King"))
-    n0f = GraphNode(Sitio("KFC"))
-    n10 = GraphNode(Sitio("La posta"))
-    n11 = GraphNode(Sitio("Tacos Champs"))
-    n12 = GraphNode(Sitio("Gorditas Mixcoac"))
-    n13 = GraphNode(Sitio("Domino's Pizza"))
-    n14 = GraphNode(Sitio("Liru sisa"))
-    n15 = GraphNode(Sitio("Pizza Perro Negro"))
-    n16 = GraphNode(Sitio("Fiesta Colonia Valle"))
-    n17 = GraphNode(Sitio("Casa Alemana"))
-    n18 = GraphNode(Sitio("Cata de bebidas en islas"))
-    n19 = GraphNode(Sitio("Pulquería"))
-    n1a = GraphNode(Sitio("Sambuca"))
-    n1b = GraphNode(Sitio("Convivio casa Alan"))
-    n1c = GraphNode(Sitio("Carnaval Iztapalapa"))
-    n1d = GraphNode(Sitio("Galería de fotos"))
+    fi = GraphNode(Sitio("FI UNAM", 0, (0, 500)))
+    n00 = GraphNode(Sitio("Auditorio Nacional", 40, (500, 700)))
+    n01 = GraphNode(Sitio("Concierto Islas", 20, (450, 550)))
+    n02 = GraphNode(Sitio("Palacio de los deportes", 60, (700, 450)))
+    n03 = GraphNode(Sitio("Parque bicentenario", 50, (440, 460)))
+    n04 = GraphNode(Sitio("Friki Plaza", 10, (520, 550)))
+    n05 = GraphNode(Sitio("Cineteca Nacional", 70, (520, 20)))
+    n06 = GraphNode(Sitio("Mercado Coyoacán", 10, (505, 20)))
+    n07 = GraphNode(Sitio("Torre Latino", 80, (510, 450)))
+    n08 = GraphNode(Sitio("Acuario Inbursa", 90, (440, 550)))
+    n09 = GraphNode(Sitio("Chapultepec", 65, (490, 500)))
+    n0a = GraphNode(Sitio("Soumaya", 45, (300, 550)))
+    n0c = GraphNode(Sitio("Feria Aztlan", 48, (490, 550)))
+    n0d = GraphNode(Sitio("Sushi Roll", 95, (500, 700)))
+    n0e = GraphNode(Sitio("Burguer King", 15, (700, 600)))
+    n0f = GraphNode(Sitio("KFC", 5, (700, 450)))
+    n11 = GraphNode(Sitio("Tacos Champs", 0, (300, 505)))
+    n12 = GraphNode(Sitio("Gorditas Mixcoac", 59, (490, 400)))
+    n13 = GraphNode(Sitio("Domino's Pizza", 55, (500, 650)))
+    n14 = GraphNode(Sitio("Liru sisa", 25, (495, 20)))
+    n15 = GraphNode(Sitio("Pizza Perro Negro", 65, (700, 550)))
+    n16 = GraphNode(Sitio("Fiesta Colonia Valle", 35, (505, 400)))
+    n17 = GraphNode(Sitio("Casa Alemana", 100, (150, 550)))
+    n18 = GraphNode(Sitio("Cata de bebidas en islas", 47, (300, 551)))
+    n19 = GraphNode(Sitio("Pulquería", 87, (690, 20)))
+    n1a = GraphNode(Sitio("Sambuca", 0, (350, 400)))
+    n1b = GraphNode(Sitio("Convivio casa Alan", 98, (170, 400)))
 
-    grafo = Graph(root, {n00, n01, n02, n03, n04, n05, n06, n07, n09, n0a, n0c, n0d, n0e, n0f, n1a, n1b, n1c, n1d})
+    nodos_destino = {n00, n01, n02, n03, n04, n05, n06, n07, n08, n09, n0a, n0c, n0d, n0e, n0f, n11, n12, n13, n14, n15,
+                     n16, n17, n18, n19, n1a, n1b}
+
+    grafo = Graph(fi, nodos_destino)
+
+    grafo.add_edge(fi, n01, randint(0, 100))
+    grafo.add_edge(fi, n0d, randint(0, 100))
+    grafo.add_edge(n0d, n06, randint(0, 100))
+    grafo.add_edge(n06, n05, randint(0, 100))
+    grafo.add_edge(n06, n14, randint(0, 100))
+    grafo.add_edge(n05, n19, randint(0, 100))
+    grafo.add_edge(n01, n1a, randint(0, 100))
+    grafo.add_edge(n01, n18, randint(0, 100))
+    grafo.add_edge(n01, n14, randint(0, 100))
+    grafo.add_edge(n18, n1a, randint(0, 100))
+    grafo.add_edge(n18, n1b, randint(0, 100))
+    grafo.add_edge(n18, n11, randint(0, 100))
+    grafo.add_edge(n18, n17, randint(0, 100))
+    grafo.add_edge(n1a, n12, randint(0, 100))
+    grafo.add_edge(n14, n12, randint(0, 100))
+    grafo.add_edge(n12, n16, randint(0, 100))
+    grafo.add_edge(n12, n09, randint(0, 100))
+    grafo.add_edge(n09, n03, randint(0, 100))
+    grafo.add_edge(n09, n08, randint(0, 100))
+    grafo.add_edge(n08, n0a, randint(0, 100))
+    grafo.add_edge(n09, n07, randint(0, 100))
+    grafo.add_edge(n09, n0c, randint(0, 100))
+    grafo.add_edge(n03, n08, randint(0, 100))
+    grafo.add_edge(n0c, n07, randint(0, 100))
+    grafo.add_edge(n0c, n13, randint(0, 100))
+    grafo.add_edge(n0c, n04, randint(0, 100))
+    grafo.add_edge(n13, n00, randint(0, 100))
+    grafo.add_edge(n07, n0f, randint(0, 100))
+    grafo.add_edge(n07, n02, randint(0, 100))
+    grafo.add_edge(n02, n0e, randint(0, 100))
+    grafo.add_edge(n0e, n04, randint(0, 100))
+    grafo.add_edge(n04, n15, randint(0, 100))
 
     print("".center(term_width, '-'))
     print(f"|{'Facultad de Ingeniería - UNAM'.center(term_width - 2, ' ')}|")
     print(f"|{'Inteligencia Artificial - Semestre 2024-2'.center(term_width - 2, ' ')}|")
     print(f"|{'Práctica 3 - Búsqueda informada y búsqueda local'.center(term_width - 2, ' ')}|")
     print("".center(term_width, '-'))
+
+    print(f"Grafo:")
+    grafo.print_graph()
+
+    print("[ Actividad 1 ]".center(term_width, '='))
+    interes = 100
+    resultados: list[tuple[list[GraphNode], int]] = []
+    for des in nodos_destino:
+        recorrido = grafo.a_star(fi, des, heuristic_p03)
+        if len(recorrido) >= 3:
+            resultados.append((recorrido, interes))
+        interes = 100
+
+    for datos in sorted(resultados, key=lambda x: x[1]):
+        print(f"Interes restante: {datos[1]:.2f} Recorrido: {datos[0]}")
+
+    mejor = max(resultados, key=lambda x: x[1])
+    print("\033[92m", end="")
+    print(f"Mejor recorrido: {mejor[0]}")
+    print(f"Interés restante: {mejor[1]}")
+    print("\033[0m", end="")
+
+    print("[ Actividad 2 ]".center(term_width, '='))
+    for node in nodos_destino:
+        resultado: GraphNode[Sitio] = grafo.ascenso_colina(node, lambda n: n.value.interes)
+        print(f"Mínimo partiendo de {node.value.nombre}: {resultado.value.nombre}")

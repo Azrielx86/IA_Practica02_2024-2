@@ -188,7 +188,7 @@ class Graph:
 
 
 class Sitio:
-    def __init__(self, nombre: str, interes: int, coordinates: tuple[float, float] = None) -> None:
+    def __init__(self, nombre: str, interes: int = 0, coordinates: tuple[float, float] = None) -> None:
         self.__nombre: str = nombre
         self.__interes: int = interes
         self.__coordinates: tuple[float, float] = coordinates or [0, 0]
@@ -224,10 +224,11 @@ class Sitio:
         return self.__str__()
 
 
-def distancia_euclidiana(start: GraphNode[Sitio], target: GraphNode[Sitio]):
-    start = start.value.coordinates
-    target = target.value.coordinates
-    return sqrt((target[0] - start[0]) ** 2 + (target[1] - start[0]) ** 2)
+def heuristic_p03(start: GraphNode[Sitio], target: GraphNode[Sitio]) -> float:
+    pos1 = start.value.coordinates
+    pos2 = target.value.coordinates
+    interes = start.neighbors.get(target, 0)
+    return sqrt((pos2[0] - pos1[0]) ** 2 + (pos2[1] - pos1[1]) ** 2) + interes
 
 
 def try_ac():
@@ -291,7 +292,7 @@ def try_a_star():
 
     graph.print_graph()
 
-    path = graph.a_star(sn, xn, distancia_euclidiana)
+    path = graph.a_star(sn, xn, heuristic_p03)
     print(path)
 
     exit(0)
@@ -304,6 +305,40 @@ if __name__ == '__main__':
         term_width = os.get_terminal_size().columns
     except OSError:
         term_width = 80
+
+    root = GraphNode(Sitio("FI UNAM"))
+    n00 = GraphNode(Sitio("Auditorio Nacional"))
+    n01 = GraphNode(Sitio("Concierto Islas"))
+    n02 = GraphNode(Sitio("Palacio de los deportes"))
+    n03 = GraphNode(Sitio("Parque bicentenario"))
+    n04 = GraphNode(Sitio("Friki Plaza"))
+    n05 = GraphNode(Sitio("Cineteca Nacional"))
+    n06 = GraphNode(Sitio("Mercado Coyoacán"))
+    n07 = GraphNode(Sitio("Torre Latino"))
+    # n08 = GraphNode(Sitio("Acuario Inbursa"))
+    n09 = GraphNode(Sitio("Chapultepec"))
+    n0a = GraphNode(Sitio("Soumaya"))
+    # n0b = GraphNode(Sitio("Parque hundido"))
+    n0c = GraphNode(Sitio("Feria Aztlan"))
+    n0d = GraphNode(Sitio("Sushi Roll"))
+    n0e = GraphNode(Sitio("Burguer King"))
+    n0f = GraphNode(Sitio("KFC"))
+    n10 = GraphNode(Sitio("La posta"))
+    n11 = GraphNode(Sitio("Tacos Champs"))
+    n12 = GraphNode(Sitio("Gorditas Mixcoac"))
+    n13 = GraphNode(Sitio("Domino's Pizza"))
+    n14 = GraphNode(Sitio("Liru sisa"))
+    n15 = GraphNode(Sitio("Pizza Perro Negro"))
+    n16 = GraphNode(Sitio("Fiesta Colonia Valle"))
+    n17 = GraphNode(Sitio("Casa Alemana"))
+    n18 = GraphNode(Sitio("Cata de bebidas en islas"))
+    n19 = GraphNode(Sitio("Pulquería"))
+    n1a = GraphNode(Sitio("Sambuca"))
+    n1b = GraphNode(Sitio("Convivio casa Alan"))
+    n1c = GraphNode(Sitio("Carnaval Iztapalapa"))
+    n1d = GraphNode(Sitio("Galería de fotos"))
+
+    grafo = Graph(root, {n00, n01, n02, n03, n04, n05, n06, n07, n09, n0a, n0c, n0d, n0e, n0f, n1a, n1b, n1c, n1d})
 
     print("".center(term_width, '-'))
     print(f"|{'Facultad de Ingeniería - UNAM'.center(term_width - 2, ' ')}|")

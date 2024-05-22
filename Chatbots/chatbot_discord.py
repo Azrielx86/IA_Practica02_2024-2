@@ -103,7 +103,7 @@ if __name__ == "__main__":
     nltk.download("punkt")
     nltk.download("wordnet")
 
-    with open("cleaned.txt", "r", errors="ignore") as file:
+    with open("chatbot.txt", "r", errors="ignore") as file:
         raw = file.read().lower()
         sent_tokens = nltk.sent_tokenize(raw)
         word_tokens = nltk.word_tokenize(raw)

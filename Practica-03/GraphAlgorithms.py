@@ -231,8 +231,7 @@ def heuristic_p03(start: GraphNode[Sitio], target: GraphNode[Sitio]) -> float:
     global interes
     pos1 = start.value.coordinates
     pos2 = target.value.coordinates
-    interes_nodo = start.neighbors.get(target, 0)
-    heuristica = sqrt((pos2[0] - pos1[0]) ** 2 + (pos2[1] - pos1[1]) ** 2) + interes_nodo
+    heuristica = sqrt((pos2[0] - pos1[0]) ** 2 + (pos2[1] - pos1[1]) ** 2) + target.value.interes
     interes -= heuristica % 10
     return heuristica
 
@@ -277,38 +276,38 @@ if __name__ == '__main__':
 
     grafo = Graph(fi, nodos_destino)
 
-    grafo.add_edge(fi, n01, randint(0, 100))
-    grafo.add_edge(fi, n0d, randint(0, 100))
-    grafo.add_edge(n0d, n06, randint(0, 100))
-    grafo.add_edge(n06, n05, randint(0, 100))
-    grafo.add_edge(n06, n14, randint(0, 100))
-    grafo.add_edge(n05, n19, randint(0, 100))
-    grafo.add_edge(n01, n1a, randint(0, 100))
-    grafo.add_edge(n01, n18, randint(0, 100))
-    grafo.add_edge(n01, n14, randint(0, 100))
-    grafo.add_edge(n18, n1a, randint(0, 100))
-    grafo.add_edge(n18, n1b, randint(0, 100))
-    grafo.add_edge(n18, n11, randint(0, 100))
-    grafo.add_edge(n18, n17, randint(0, 100))
-    grafo.add_edge(n1a, n12, randint(0, 100))
-    grafo.add_edge(n14, n12, randint(0, 100))
-    grafo.add_edge(n12, n16, randint(0, 100))
-    grafo.add_edge(n12, n09, randint(0, 100))
-    grafo.add_edge(n09, n03, randint(0, 100))
-    grafo.add_edge(n09, n08, randint(0, 100))
-    grafo.add_edge(n08, n0a, randint(0, 100))
-    grafo.add_edge(n09, n07, randint(0, 100))
-    grafo.add_edge(n09, n0c, randint(0, 100))
-    grafo.add_edge(n03, n08, randint(0, 100))
-    grafo.add_edge(n0c, n07, randint(0, 100))
-    grafo.add_edge(n0c, n13, randint(0, 100))
-    grafo.add_edge(n0c, n04, randint(0, 100))
-    grafo.add_edge(n13, n00, randint(0, 100))
-    grafo.add_edge(n07, n0f, randint(0, 100))
-    grafo.add_edge(n07, n02, randint(0, 100))
-    grafo.add_edge(n02, n0e, randint(0, 100))
-    grafo.add_edge(n0e, n04, randint(0, 100))
-    grafo.add_edge(n04, n15, randint(0, 100))
+    grafo.add_edge(fi, n01)
+    grafo.add_edge(fi, n0d)
+    grafo.add_edge(n0d, n06)
+    grafo.add_edge(n06, n05)
+    grafo.add_edge(n06, n14)
+    grafo.add_edge(n05, n19)
+    grafo.add_edge(n01, n1a)
+    grafo.add_edge(n01, n18)
+    grafo.add_edge(n01, n14)
+    grafo.add_edge(n18, n1a)
+    grafo.add_edge(n18, n1b)
+    grafo.add_edge(n18, n11)
+    grafo.add_edge(n18, n17)
+    grafo.add_edge(n1a, n12)
+    grafo.add_edge(n14, n12)
+    grafo.add_edge(n12, n16)
+    grafo.add_edge(n12, n09)
+    grafo.add_edge(n09, n03)
+    grafo.add_edge(n09, n08)
+    grafo.add_edge(n08, n0a)
+    grafo.add_edge(n09, n07)
+    grafo.add_edge(n09, n0c)
+    grafo.add_edge(n03, n08)
+    grafo.add_edge(n0c, n07)
+    grafo.add_edge(n0c, n13)
+    grafo.add_edge(n0c, n04)
+    grafo.add_edge(n13, n00)
+    grafo.add_edge(n07, n0f)
+    grafo.add_edge(n07, n02)
+    grafo.add_edge(n02, n0e)
+    grafo.add_edge(n0e, n04)
+    grafo.add_edge(n04, n15)
 
     print("".center(term_width, '-'))
     print(f"|{'Facultad de Ingeniería - UNAM'.center(term_width - 2, ' ')}|")
@@ -324,7 +323,7 @@ if __name__ == '__main__':
     resultados: list[tuple[list[GraphNode], int]] = []
     for des in nodos_destino:
         recorrido = grafo.a_star(fi, des, heuristic_p03)
-        if len(recorrido) >= 3:
+        if len(recorrido) >= 4:
             resultados.append((recorrido, interes))
         interes = 100
 

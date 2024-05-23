@@ -1,15 +1,17 @@
 import random
 
-# modelo_objetivo = ['H', 'o', 'l', 'a', ' ', 'p', 'r', 'o', 'f', 'e']
-modelo_objetivo = ['H', 'o', 'l', 'a']
-modelo = [*map(lambda x: ord(x), modelo_objetivo)]
+atributos = ["Inteligencia", "Fuerza", "Mutación", "Velocidad", "Vuelo",
+             "Inmunidad", "Magia", "Locura", "Dinero", "Minions", "Semidios"]
+modelo = [100, 50, 80, 10, 70, 20, 10, 30, 50, 100, 80]
 largo = len(modelo)
 num = 15
-pressure = 2
-mutation_chance = 0.5
+pressure = 4
+mutation_chance = 0.35
 
-print(f"Modelo: {modelo_objetivo}")
-print(f"Modelo (valor ASCII): {modelo}")
+print(f"Modelo: {modelo}")
+
+for atributo, valor in zip(atributos, modelo):
+    print(f"{atributo} = {valor}")
 
 
 def individual(min_val: int, max_val: int) -> list[int]:
@@ -23,7 +25,7 @@ def crearPoblacion() -> list[list[int]]:
     """
         Crea una poblacion nueva de individuos
     """
-    return [individual(ord('A'), ord('z')) for _ in range(num)]
+    return [individual(0, 101) for _ in range(num)]
 
 
 def calcularFitness(individual):
@@ -86,7 +88,7 @@ def mutation(population):
 
 population = crearPoblacion()
 print(f"Poblacion Inicial:")
-print('\n'.join([*map(lambda entity: str([*map(lambda val: chr(val), entity)]), population)]))
+print(population)
 target = 20000
 for i in range(target):
     population = selection_and_reproduction(population)
@@ -94,4 +96,4 @@ for i in range(target):
     print(f"Progreso: {i}/{target}", end="\r")
 print("\33[2K", end="")
 print(f"Poblacion Final:")
-print('\n'.join([*map(lambda entity: str([*map(lambda val: chr(val), entity)]), population)]))
+print(population)
